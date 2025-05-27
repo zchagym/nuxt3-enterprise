@@ -11,16 +11,19 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth'
 const username = ref('demo')
 const password = ref('demo')
 const error = ref('')
-const auth = useAuth()
 const router = useRouter()
+const auth = useAuthStore()
 
 async function handle () {
-  error.value = ''
-  const ok = await auth.login(username.value, password.value)
-  if (ok) router.push('/')
-  else error.value = 'Invalid credential'
+  try {
+    await auth.login(username.value, password.value)
+    router.push('/')
+  } catch {
+    error.value = 'Wrong credential'
+  }
 }
 </script>

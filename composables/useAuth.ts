@@ -1,29 +1,11 @@
-import { useAuthStore } from '~/stores/auth'
-
 export const useAuth = () => {
     const store = useAuthStore()
+    if (process.client && !store.user) store.refresh() // 首屏刷新 Cookie
 
-    async function login (username: string, password: string) {
-        try {
-            const { data, error } = await useFetch<{ token: string; user: any }>('/api/auth/login', {
-                method: 'POST',
-                body: { username, password }
-            })
-            if (error.value) throw error.value
-
-            store.setToken(data.value!.token)
-            store.setUser(data.value!.user)
-            return true
-        } catch (e) {
-            console.error(e)
-            return false
-        }
+    return {
+        user: computed(() => store.user),
+        isLoggedIn: computed(() => store.isLoggedIn),
+        login: store.login,
+        logout: store.logout
     }
-
-    function logout () {
-        store.$reset()
-        navigateTo('/login')
-    }
-
-    return { login, logout, user: store.user, isLoggedIn: store.isLoggedIn }
 }

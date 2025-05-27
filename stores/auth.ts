@@ -1,19 +1,28 @@
-import { defineStore } from 'pinia'
-
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        token: '' as string,
-        user: null as null | { id: number; username: string }
+        user: null as null | { id:number; username:string }
     }),
     getters: {
-        isLoggedIn: state => !!state.token
+        isLoggedIn: state => !!state.user
     },
     actions: {
-        setToken (t: string) {
-            this.token = t
+        setUser (u:any) { this.user = u },
+        async login (username:string, password:string) {
+            const { $api } = useNuxtApp()
+            const { user } = await $api('/auth/login', { method:'POST', body:{ username, password } })
+            this.user = user
+            return true
         },
-        setUser (u: any) {
-            this.user = u
+        async refresh () {
+            const { $api } = useNuxtApp()
+            const { user } = await $api('/auth/refresh')
+            this.user = user
+        },
+        async logout () {
+            const { $api } = useNuxtApp()
+            await $api('/auth/logout', { method:'POST' })
+            this.$reset()
+            if (process.client) navigateTo('/login')
         }
     },
     persist: true
