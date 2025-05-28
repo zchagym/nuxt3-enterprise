@@ -5,6 +5,7 @@
       <NuxtLink v-if="!isLoggedIn" to="/login">Login</NuxtLink>
       <button v-else @click="logout" class="text-red-500">Logout</button>
     </div>
+    <NuxtLink to="/posts" class="ml-4">Posts</NuxtLink>
   </header>
 </template>
 
