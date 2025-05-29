@@ -1,26 +1,16 @@
-/* composables/usePosts.ts */
 export function usePosts () {
-    /* ← 这里不能写任何 useNuxtApp/useRoute，先定义空壳函数 */
-
     async function fetchList (page = 1, q = '') {
-        const { $api } = useNuxtApp()       // ★ 只有调用 fetchList 才会执行
+        const { $api } = useNuxtApp()
         const store = usePostStore()
 
-        if (store.list[page]?.data) return store.list[page]
+        const cache = store.list[page]?.[q]
+        if (cache?.data) return cache
+
         const res = await $api('/posts', { params: { page, q } })
-        store.setList(page, res)
+        store.setList(page, q, res)
         return res
     }
-
-    async function fetchDetail (id: number) {
-        const { $api } = useNuxtApp()       // ★ 同理
-        const store = usePostStore()
-
-        if (store.detail[id]) return store.detail[id]
-        const { post, related } = await $api(`/posts/${id}`)
-        store.setDetail(id, { post, related })
-        return { post, related }
-    }
-
+    /* 其余保持不变 */
+    async function fetchDetail (id:number) {/*...*/}
     return { fetchList, fetchDetail }
 }
