@@ -1,0 +1,9 @@
+{
+  "siteName": "Nuxt3-Enterprise",
+  "login": "Login",
+  "logout": "Logout",
+  "posts": "Posts",
+  "searchHint": "Search title...",
+  "noResult": "No result for “{keyword}”",
+  "articles": "Articles"
+}
