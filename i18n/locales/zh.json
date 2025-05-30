@@ -1,0 +1,9 @@
+{
+  "siteName": "Nuxt3-企业骨架",
+  "login": "登录",
+  "logout": "登出",
+  "posts": "文章",
+  "searchHint": "搜索标题…",
+  "noResult": "没有找到 “{keyword}”",
+  "articles": "文章"
+}
