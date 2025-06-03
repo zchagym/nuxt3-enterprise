@@ -36,5 +36,6 @@ export default defineNuxtConfig({
         classSuffix: '',
         preference : 'system', // 跟随系统
         fallback   : 'light'
-    }
+    },
+    nitro: { preset: 'vercel-edge' }
 })
