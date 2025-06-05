@@ -37,5 +37,9 @@ export default defineNuxtConfig({
         preference : 'system', // 跟随系统
         fallback   : 'light'
     },
-    nitro: { preset: 'vercel-edge' }
+    nitro: {
+        preset: process.env.NITRO_PRESET ?? 'node-server',
+        port: Number(process.env.NITRO_PORT ?? 3000),
+        host: process.env.NITRO_HOST ?? '0.0.0.0'
+    }
 })
