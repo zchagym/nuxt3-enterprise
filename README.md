@@ -73,3 +73,8 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## CI/CD
+- Unit (Vitest) + E2E (Playwright) + Lighthouse-CI
+- Docker Hub: ghcr.io/<user>/nuxt3-enterprise
+- Online demo: https://nuxt3-enterprise.vercel.app
