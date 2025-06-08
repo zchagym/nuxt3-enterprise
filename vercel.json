@@ -1,0 +1,10 @@
+{
+  "framework": "nuxtjs",
+
+  "buildCommand": "npm run build",
+
+  "outputDirectory": ".output",
+
+
+  "installCommand": "npm ci --prefer-offline --frozen-lockfile"
+}
