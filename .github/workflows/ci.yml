@@ -1,20 +1,17 @@
 name: CI
 
-# 何时触发
 on:
   push:
-    branches: [develop, main]      # 推到 develop / main 时触发
-  pull_request:                    # 给任意分支开 PR 也触发
+    branches: [develop, main]
+  pull_request:
 
 jobs:
   test-build-deploy:
-    runs-on: ubuntu-latest         # 使用 GitHub 托管的 Linux Runner
-
-    # 如果后面要用 Buildx 去构建镜像，必须开一个 Docker-in-Docker 服务
+    runs-on: ubuntu-latest
     services:
       docker:
         image: docker:23.0.6-dind
-        options: --privileged       # 允许 dind 内部跑守护进程
+        options: --privileged
 
     steps:
       # ---------- 0. 拉代码 ----------
@@ -25,66 +22,58 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20          # Nuxt 官方推荐 LTS18；如需 20 改这里
-          cache: 'npm'              # 会把 node_modules 缓存到 GitHub
-
+          node-version: 20      # 可改成 18
+          cache: 'npm'
       - name: Install Dependencies
         run: npm ci --frozen-lockfile
 
       # ---------- 2. 单元测试 (Vitest) ----------
       - name: Unit Test
-        run: npm test               # 等同于 `vitest run`
+        run: npm test
 
       # ---------- 3. 安装浏览器 + E2E (Playwright) ----------
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: E2E Test
-        run: npm run test:e2e       # 比如 package.json 里的 "test:e2e": "playwright test"
+        run: npm run test:e2e
 
       # ---------- 4. Lighthouse 性能基线 ----------
       - name: Build Production Bundle
-        run: |
-          NITRO_PRESET=node-server npm run build       # 生成 .output
-      - name: Collect Lighthouse Report
-        run: |
-          npm run preview &                        # ⚠️ 用后台模式开启本地服务
-          npx wait-on http://localhost:3000        # 等待端口就绪
-          npx lhci collect --url=http://localhost:3000 --settings.preset=desktop
+        run: NITRO_PRESET=node-server npm run build
+      - name: Lighthouse autorun
+        run: npx lhci autorun --upload.outputDir=lhci-report
       - name: Upload LH Report
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-report
-          path: .lighthouseci
+          path: lhci-report/**
+          if-no-files-found: error
 
-      # ---------- 5. Build & Push Docker ----------·
-      # 5-1 让 runner 具备跨架构能力
+      # ---------- 5. Build & Push Docker ----------
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      # 5-2 登录 Docker Hub (凭证放 Secrets)
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           registry: docker.io
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
-      # 5-3 构建并推镜像
       - name: Build & Push Image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64          # 如果要多架构可写 linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ secrets.DOCKER_USER }}/nuxt3-enterprise:latest
           push: true
 
       # ---------- 6. 部署到 Vercel ----------
       - name: Deploy to Vercel (prod)
-        uses: amondnet/vercel-action@v25   # 保持 v25 或更新到 latest
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token:      ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id:     ${{ secrets.VERCEL_ORG }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT }}
           working-directory: .
-          # 关键：用 --prod --confirm 取代以前的 prod: true
           vercel-args: '--prod --confirm'
